@@ -6,7 +6,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y openssl python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 COPY . .
 # We need to ensure Prisma client is generated before build
 RUN npx prisma generate
