@@ -1,0 +1,21 @@
+{
+    admin off
+    persist_config off
+}
+
+:{$PORT:3000} {
+    # Socket.io routing
+    handle /socket.io/* {
+        reverse_proxy localhost:3003
+    }
+
+    # Everything else to Next.js
+    handle {
+        reverse_proxy localhost:3001
+    }
+
+    log {
+        output stdout
+        format json
+    }
+}
