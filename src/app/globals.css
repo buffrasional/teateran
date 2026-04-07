@@ -1,0 +1,227 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-noto-serif);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-charcoal: var(--charcoal);
+  --color-warm-white: var(--warm-white);
+  --color-warm-gray: var(--warm-gray);
+  --color-seat-vip: var(--seat-vip);
+  --color-seat-regular: var(--seat-regular);
+  --color-seat-student: var(--seat-student);
+  --color-seat-locked: var(--seat-locked);
+  --color-seat-sold: var(--seat-sold);
+  --color-seat-selected: var(--seat-selected);
+  --color-seat-invitation: var(--seat-invitation);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /* Japanese-inspired warm palette */
+  --background: #FAF7F2;
+  --foreground: #1A1A2E;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A2E;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A2E;
+  --primary: #C8A951;
+  --primary-foreground: #1A1A2E;
+  --secondary: #F0EBE0;
+  --secondary-foreground: #1A1A2E;
+  --muted: #F0EBE0;
+  --muted-foreground: #8B8680;
+  --accent: #1A1A2E;
+  --accent-foreground: #FAF7F2;
+  --destructive: #C75050;
+  --border: #E8E2D8;
+  --input: #E8E2D8;
+  --ring: #C8A951;
+  --chart-1: #C8A951;
+  --chart-2: #7BA7A5;
+  --chart-3: #A08635;
+  --chart-4: #1A1A2E;
+  --chart-5: #8B8680;
+
+  /* Custom colors */
+  --gold: #C8A951;
+  --gold-light: #E2C97E;
+  --gold-dark: #A08635;
+  --charcoal: #1A1A2E;
+  --warm-white: #FAF7F2;
+  --warm-gray: #8B8680;
+
+  /* Seat colors */
+  --seat-vip: #C8A951;
+  --seat-regular: #8B8680;
+  --seat-student: #7BA7A5;
+  --seat-locked: #D4843E;
+  --seat-sold: #3D3D3D;
+  --seat-selected: #C8A951;
+  --seat-invitation: #8B6BAE;
+  --success: #4A7C59;
+  --danger: #C75050;
+
+  --sidebar: #F0EBE0;
+  --sidebar-foreground: #1A1A2E;
+  --sidebar-primary: #C8A951;
+  --sidebar-primary-foreground: #1A1A2E;
+  --sidebar-accent: #E8E2D8;
+  --sidebar-accent-foreground: #1A1A2E;
+  --sidebar-border: #E8E2D8;
+  --sidebar-ring: #C8A951;
+}
+
+.dark {
+  --background: #1A1A2E;
+  --foreground: #FAF7F2;
+  --card: #242440;
+  --card-foreground: #FAF7F2;
+  --popover: #242440;
+  --popover-foreground: #FAF7F2;
+  --primary: #E2C97E;
+  --primary-foreground: #1A1A2E;
+  --secondary: #2A2A48;
+  --secondary-foreground: #FAF7F2;
+  --muted: #2A2A48;
+  --muted-foreground: #A09B95;
+  --accent: #FAF7F2;
+  --accent-foreground: #1A1A2E;
+  --destructive: #E06060;
+  --border: #3A3A58;
+  --input: #3A3A58;
+  --ring: #E2C97E;
+  --chart-1: #E2C97E;
+  --chart-2: #7BA7A5;
+  --chart-3: #C8A951;
+  --chart-4: #FAF7F2;
+  --chart-5: #A09B95;
+  --sidebar: #242440;
+  --sidebar-foreground: #FAF7F2;
+  --sidebar-primary: #E2C97E;
+  --sidebar-primary-foreground: #1A1A2E;
+  --sidebar-accent: #2A2A48;
+  --sidebar-accent-foreground: #FAF7F2;
+  --sidebar-border: #3A3A58;
+  --sidebar-ring: #E2C97E;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C8A951;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A08635;
+}
+
+/* Abstract background pattern */
+.abstract-bg {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(200, 169, 81, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(123, 167, 165, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(26, 26, 46, 0.03) 0%, transparent 50%);
+}
+
+/* Seat animations */
+@keyframes seat-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(200, 169, 81, 0.4); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 4px rgba(200, 169, 81, 0); }
+}
+
+.seat-selected {
+  animation: seat-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+/* Zen line decoration */
+.zen-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #C8A951, transparent);
+  opacity: 0.4;
+}
+
+/* Hero gradient overlay */
+.hero-gradient {
+  background: linear-gradient(to bottom,
+    rgba(26, 26, 46, 0.1) 0%,
+    rgba(26, 26, 46, 0.4) 40%,
+    rgba(26, 26, 46, 0.85) 100%
+  );
+}
+
+/* Stage glow */
+.stage-glow {
+  box-shadow: 0 0 30px rgba(200, 169, 81, 0.15), 0 0 60px rgba(200, 169, 81, 0.05);
+}

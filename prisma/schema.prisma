@@ -1,0 +1,319 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =====================
+// SEAT MAP MODEL
+// =====================
+enum SeatMapType {
+  NUMBERED
+  GENERAL_ADMISSION
+}
+
+enum StageType {
+  PROSCENIUM      // Stage at front, audience faces one direction (default)
+  AMPHITHEATER    // Curved/semicircular seating around stage
+  BLACK_BOX       // Stage in center, audience on all sides
+  THRUST          // Stage extends into audience on 3 sides
+  ARENA           // Audience surrounds stage on all 4 sides
+}
+
+model SeatMap {
+  id          String        @id @default(cuid())
+  name        String        // e.g., "Auditorium Rendra", "Black Box"
+  creatorName String        // Admin name who created it
+  seatType    SeatMapType   @default(NUMBERED)
+  stageType   StageType     @default(PROSCENIUM) // Stage layout variant
+  layoutData  Json          @default("[]") // JSON: layout object with seats/zones/objects
+  isTemplate  Boolean       @default(false) // System template (locked, not directly editable)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  events       Event[]
+  editorLocks  MapEditorLock[]
+
+  @@index([name])
+}
+
+// =====================
+// MAP EDITOR LOCK MODEL
+// =====================
+model MapEditorLock {
+  id             String   @id @default(cuid())
+  seatMapId      String   @unique
+  lockedByAdminId String  // Admin ID who holds the lock
+  lockedByAdmin  String? // Admin name (denormalized for quick display)
+  lockedAt       DateTime @default(now())
+
+  // Relations
+  seatMap SeatMap @relation(fields: [seatMapId], references: [id], onDelete: Cascade)
+}
+
+// =====================
+// EVENT MODEL
+// =====================
+model Event {
+  id              String   @id @default(cuid())
+  title           String
+  category        String   @default("Teater")
+  showDate        DateTime // Kept for backward compatibility — oldest show date
+  openGate        DateTime?
+  location        String
+  posterUrl       String?
+  synopsis        String
+  teaserVideoUrl  String?  // YouTube/Vimeo embed URL for teaser video
+  isPublished     Boolean  @default(false)
+  adminFee        Int      @default(0) // Admin fee per ticket in IDR
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  priceCategories PriceCategory[]
+  showDates       EventShowDate[]
+  seats           Seat[]
+  transactions    Transaction[]
+  merchandise     Merchandise[]
+  promoCodes      PromoCode[]
+  seatMapId       String?
+  seatMap         SeatMap?  @relation(fields: [seatMapId], references: [id], onDelete: SetNull)
+}
+
+// =====================
+// EVENT SHOW DATE MODEL (Multi-Day)
+// =====================
+model EventShowDate {
+  id        String   @id @default(cuid())
+  eventId   String
+  date      DateTime // Show date & time for this day
+  openGate  DateTime? // Gate opening time for this specific day
+  label     String?  // Custom label e.g., "Premiere", " Gala", "Day 1"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  seats       Seat[]
+  transactions Transaction[]
+
+  @@index([eventId])
+}
+
+// =====================
+// PRICE CATEGORY MODEL
+// =====================
+model PriceCategory {
+  id        String  @id @default(cuid())
+  eventId   String
+  name      String  // e.g., VIP, Regular, Student
+  price     Float
+  colorCode String  // hex color code for seat display
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  seats Seat[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// =====================
+// SEAT MODEL
+// =====================
+enum SeatStatus {
+  AVAILABLE
+  LOCKED_TEMPORARY
+  SOLD
+  INVITATION
+  UNAVAILABLE
+}
+
+model Seat {
+  id          String     @id @default(cuid())
+  eventId     String
+  seatCode    String     // e.g., A-1, A-2, B-1
+  status      SeatStatus @default(AVAILABLE)
+  lockedUntil DateTime?
+  lockedBy    String?    // sessionId of the user who locked this seat
+  row         String     // e.g., A, B, C
+  col         Int        // column number for grid layout
+  zoneName    String?    // Zone name for General Admission grouping (e.g., "Festival Kiri")
+
+  // Relations
+  event          Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventShowDate  EventShowDate? @relation(fields: [eventShowDateId], references: [id], onDelete: Cascade)
+  priceCategory  PriceCategory? @relation(fields: [priceCategoryId], references: [id])
+
+  eventShowDateId String?
+  priceCategoryId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId, status])
+  @@index([eventShowDateId])
+  @@index([seatCode])
+  @@index([zoneName])
+}
+
+// =====================
+// TRANSACTION MODEL
+// =====================
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+model Transaction {
+  id               String        @id @default(cuid())
+  transactionId    String        @unique // custom format like TRX-1234 or COMP-1234
+  eventId          String
+  showDateId       String?       // Which show date this transaction is for (multi-day events)
+  customerName     String
+  customerEmail    String
+  customerWa       String        // WhatsApp number
+  seatCodes        String        // JSON array of strings, e.g., ["A-1", "A-2"]
+  totalAmount      Float
+  midtransId       String?       // Midtrans order ID
+  paymentStatus    PaymentStatus @default(PENDING)
+  qrCodeUrl        String?       // QR code image (base64 or URL)
+  paidAt           DateTime?
+  expiredAt        DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  checkInTime      DateTime?     // When usher scanned the ticket
+  adminFeeApplied  Int           @default(0) // Total admin fee charged
+  promoCodeId      String?       // Applied promo code
+  merchandiseData  String?       // JSON: [{merchandiseId, name, price, quantity}]
+
+  // Relations
+  event          Event          @relation(fields: [eventId], references: [id])
+  eventShowDate  EventShowDate? @relation(fields: [showDateId], references: [id])
+  promoCode      PromoCode?     @relation(fields: [promoCodeId], references: [id])
+
+  @@index([transactionId])
+  @@index([paymentStatus])
+  @@index([customerEmail])
+  @@index([showDateId])
+}
+
+// =====================
+// MERCHANDISE MODEL
+// =====================
+model Merchandise {
+  id          String   @id @default(cuid())
+  eventId     String
+  name        String
+  description String   @default("")
+  price       Int      // Price in IDR
+  stock       Int      // Available stock
+  imageUrl    String?  // Merchandise image URL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+// =====================
+// PROMO CODE MODEL
+// =====================
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+enum PromoTarget {
+  ALL           // Applies to entire cart (tickets + merch + admin fee)
+  TICKET        // Discount applies to ticket subtotal only
+  MERCH         // Discount applies to merchandise subtotal only
+  BUNDLING      // Discount applies only when buying both tickets + merchandise
+}
+
+model PromoCode {
+  id            String       @id @default(cuid())
+  eventId       String?      // Null = applicable to all events
+  code          String       @unique // e.g., "TEATER50", "EARLYBIRD"
+  discountType  DiscountType
+  discountValue Int          // Percentage (e.g., 50) or fixed amount (e.g., 25000)
+  maxUses       Int          // Maximum number of uses
+  currentUses   Int          @default(0)
+  validFrom     DateTime
+  validUntil    DateTime
+  target        PromoTarget  @default(ALL)     // Where discount applies
+  isPerItem     Boolean      @default(false)   // If true, discount is per-ticket/per-item (e.g., presale)
+  minTickets    Int          @default(0)       // Minimum tickets required to qualify
+  minMerchItems Int          @default(0)       // Minimum merch items required to qualify
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relations
+  event        Event?       @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  transactions Transaction[]
+
+  @@index([code])
+  @@index([eventId])
+}
+
+// =====================
+// EMAIL TEMPLATE MODEL (Admin)
+// =====================
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g., "default", "vip_template"
+  greeting  String   @default("Dear {customerName},")
+  rules     String   @default("Please arrive 30 minutes before show time. No outside food or drinks allowed.")
+  notes     String   @default("Present this e-ticket at the entrance.")
+  footer    String   @default("Thank you for choosing Teateran.")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// =====================
+// ADMIN MODEL
+// =====================
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // hashed password
+  name      String?
+  role      String   @default("admin") // "admin" or "usher"
+  isActive  Boolean  @default(true)    // Admin can disable usher accounts
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  activityLogs ActivityLog[]
+}
+
+// =====================
+// ACTIVITY LOG MODEL
+// =====================
+model ActivityLog {
+  id        String   @id @default(cuid())
+  adminId   String   // Who performed the action
+  adminName String?  // Denormalized for quick display
+  action    String   // e.g., "LOGIN", "CHECK_IN", "UNLOCK_SEAT", "CREATE_EVENT"
+  details   String?  // JSON or text with additional context
+  ipAddress String?  // Client IP address
+  createdAt DateTime @default(now())
+
+  // Relations
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+}
