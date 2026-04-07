@@ -17,7 +17,7 @@ FROM node:20-slim
 WORKDIR /app
 
 # Install necessary libraries for Prisma and networking
-RUN apt-get update && apt-get install -y openssl ca-certificates curl bash && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openssl ca-certificates curl bash unzip && rm -rf /var/lib/apt/lists/*
 
 # Install Bun for Seat Service
 RUN curl -fsSL https://bun.sh/install | bash
